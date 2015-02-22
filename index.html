@@ -5,15 +5,57 @@
     <title>QuickMapper2</title>
 
     <link rel="stylesheet" href="css/materialize.min.css"/>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+    <link rel="stylesheet" href="css/qm.css"/>
 </head>
 <body>
     <header>
-        <div class="container">
-            <h1 class="flow-text">QuickMapper V2</h1>
-        </div>
+        <nav>
+            <div class="nav-wrapper">
+                <div class="col s12">
+                    <a href="#!" class="brand-logo">Logo</a>
+                    <a href="#" data-activates="mobile-demo" class="button-collapse"><i class="mdi-navigation-menu"></i></a>
+                    <ul class="right hide-on-med-and-down">
+                        <li><a href="components.html">Components</a></li>
+                        <li><a href="javascript.html">Javascript</a></li>
+                        <li><a href="mobile.html">Mobile</a></li>
+                    </ul>
+                    <ul class="side-nav" id="mobile-demo">
+                        <li><a href="components.html">Components</a></li>
+                        <li><a href="javascript.html">Javascript</a></li>
+                        <li><a href="mobile.html">Mobile</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
     </header>
 
+    <main>
+        <section class="main-head-container parallax-container">
+            <div class="parallax"><img src=""/></div>
+            <div class="valign-wrapper main-head">
+                <hgroup>
+                    <h1 class="valign">Let's search for some awesome pictures !</h1>
+                    <h2 class="valign">Pictures from the world</h2>
+                    <div class="input-field col s6">
+                        <i class="mdi-action-search prefix"></i>
+                        <input id="icon_prefix" class="search" type="text">
+                        <label for="icon_prefix">Search for a place to see</label>
+                    </div>
+                </hgroup>
+            </div>
+        </section>
+
+        <section class="map-container">
+            <div id="picuresMap"></div>
+        </section>
+    </main>
+
     <script src="js/angular.min.js"></script>
-    <script src="js/jquery-2.1.3.min.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/jquery-ui.min.js"></script>
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+    <script src="js/materialize.min.js"></script>
+    <script src="js/app-jquery.js"></script>
 </body>
 </html>

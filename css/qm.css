@@ -1,0 +1,41 @@
+body, html{
+    height: 100% !important;
+}
+.main-head-container{
+    background-repeat: no-repeat !important;
+    -webkit-background-size: cover !important;
+    background-size: cover;
+    background-position: center center;
+}
+.main-head{
+    height: 500px;
+    background: rgba(0,0,0,0.4);
+    color: #fff;
+    text-align: center;
+}
+
+.main-head h1 {
+    font-weight: 300;
+}
+
+/* label color */
+.input-field label {
+    color: #cccccc;
+}
+/* label focus color */
+.input-field input[type=text]:focus + label {
+    color: #cccccc;
+}
+/* label underline focus color */
+.input-field input[type=text]:focus {
+    border-bottom: 1px solid #cccccc;
+    box-shadow: 0 1px 0 0 #cccccc;
+}
+/* icon prefix focus color */
+.input-field .prefix.active {
+    color: #cccccc;
+}
+
+#picuresMap{
+    height: 720px;
+}
