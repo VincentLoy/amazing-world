@@ -39,3 +39,12 @@ body, html{
 #picuresMap{
     height: 720px;
 }
+
+.map-container{
+    position: relative;
+}
+.refresh{
+    position: absolute;
+    top: 15px;
+    right: 15px;
+}

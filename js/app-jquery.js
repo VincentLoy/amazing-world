@@ -1,12 +1,16 @@
 $(document).ready(function(){
     //global var
-    var waiting, adresse, map;
+    var waiting, adresse, map, longitude, latitude;
 
 
     $(".button-collapse").sideNav();
 
     setBackground();
     setMap(0,0);
+
+    $(".refresh").on("click", function(){
+       getSomePhotos();
+    });
 
     $(".search").keyup(function(){
         adresse = $(this).val();
@@ -20,19 +24,19 @@ $(document).ready(function(){
 
         $.getJSON(geocode, function($data){
             var obj = $data.results[0];
-            var latitude = obj.geometry.location.lat,
-                longitude = obj.geometry.location.lng;
+            latitude = obj.geometry.location.lat;
+            longitude = obj.geometry.location.lng;
             $('html,body').animate({
                 scrollTop: $("#picuresMap").offset().top
             },1500, 'easeInOutQuad');
-
+            getSomePhotos();
             map.panTo(new L.LatLng(latitude, longitude));
         });
     }
 
 
     function setMap(lat,lon){
-        map = L.map('picuresMap').setView([lat, lon], 10);
+        map = L.map('picuresMap').setView([lat, lon], 12);
 
         L.tileLayer('https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png', {
             maxZoom: 18,
@@ -74,6 +78,64 @@ $(document).ready(function(){
             $(".parallax>img").attr("src", img);
             $(".parallax").parallax();
             //$(".main-head-container").css("background", "url("+img+")");
+        }).fail(function(jqXHR, status, error){
+            console.dir(error);
+        });
+    }
+
+    function getSomePhotos(){
+        //var tags = "veracruz,mexico,jarocho"
+        var limit = 120;
+        var flickr = "https://api.flickr.com/services/rest/?&method=flickr.photos.search&per_page="+limit+"&api_key=f42673e7bf8314ab473f73e8668ac2f7&radius=10&extras=geo,owner_name,license,date_upload,date_taken,url_sq,url_t, url_s, url_q, url_m, url_n, url_z, url_c, url_l, url_o&format=json&nojsoncallback=1&lat="+latitude+"&lon="+longitude;
+        $.getJSON(flickr, function($photos){
+            var path = $photos.photos.photo;
+            var picts = [];
+            var random = parseInt(Math.random()*path.length);
+            var img = path[random].url_l;
+
+            for(var i = 0; i<50; i++){
+                var pict = path[parseInt(Math.random()*path.length)];
+                var o = {
+                    ownerUrl: "https://www.flickr.com/photos/"+pict.owner,
+                    ownerName: pict.ownername,
+                    title: pict.title,
+                    dateUpload : pict.dateupload,
+                    dateTaken: pict.datetaken,
+                    dateTakenUnknown: pict.datetakenunknown,
+                    lat: pict.latitude,
+                    lng: pict.longitude,
+                    placeId: pict.place_id,
+                    woeid: pict.woeid,
+                    height_sq: pict.height_sq,
+                    width_sq: pict.width_sq,
+                    img_sq: pict.url_sq,
+                    img_t: pict.url_t,
+                    img_s: pict.url_s,
+                    img_q: pict.url_q,
+                    img_m: pict.url_m,
+                    img_n: pict.url_n,
+                    img_z: pict.url_z,
+                    img_c: pict.url_c,
+                    img_l: pict.url_l,
+                    img_o: pict.url_o,
+                    marker: L.icon({
+                        iconUrl: pict.url_sq,
+
+                        iconSize: [35,35],
+                        iconAnchor: [22,94],
+                        popupAnchor: [-3,-76]
+                    })
+
+                }
+                picts.push(o);
+            }
+
+            for(var i = 0; i<picts.length; i++){
+                L.marker([picts[i].lat, picts[i].lng], {icon: picts[i].marker}).addTo(map);
+            }
+
+
+            console.log(picts);
         }).fail(function(jqXHR, status, error){
             console.dir(error);
         });
