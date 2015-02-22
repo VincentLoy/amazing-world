@@ -1,6 +1,6 @@
 $(document).ready(function(){
     //global var
-    var waiting, adresse, map, longitude, latitude;
+    var waiting, adresse, map, longitude, latitude, markers;
 
 
     $(".button-collapse").sideNav();
@@ -37,6 +37,7 @@ $(document).ready(function(){
 
     function setMap(lat,lon){
         map = L.map('picuresMap').setView([lat, lon], 12);
+        markers = L.layerGroup();
 
         L.tileLayer('https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png', {
             maxZoom: 18,
@@ -49,19 +50,6 @@ $(document).ready(function(){
 
         L.marker([lat, lon]).addTo(map)
             .bindPopup("<b>Hello world!</b><br />I am a popup.").openPopup();
-
-
-        var popup = L.popup();
-
-        function onMapClick(e) {
-            popup
-                .setLatLng(e.latlng)
-                .setContent("You clicked the map at " + e.latlng.toString())
-                .openOn(map);
-        }
-
-
-        map.on('click', onMapClick);
     }
 
 
@@ -85,9 +73,11 @@ $(document).ready(function(){
 
     function getSomePhotos(){
         //var tags = "veracruz,mexico,jarocho"
+
         var limit = 120;
         var flickr = "https://api.flickr.com/services/rest/?&method=flickr.photos.search&per_page="+limit+"&api_key=f42673e7bf8314ab473f73e8668ac2f7&radius=10&extras=geo,owner_name,license,date_upload,date_taken,url_sq,url_t, url_s, url_q, url_m, url_n, url_z, url_c, url_l, url_o&format=json&nojsoncallback=1&lat="+latitude+"&lon="+longitude;
         $.getJSON(flickr, function($photos){
+            markers.clearLayers();
             var path = $photos.photos.photo;
             var picts = [];
             var random = parseInt(Math.random()*path.length);
@@ -124,15 +114,18 @@ $(document).ready(function(){
                         iconSize: [35,35],
                         iconAnchor: [22,94],
                         popupAnchor: [-3,-76]
-                    })
+                    }),
+                    popupContent: '<strong>'+pict.title+'</strong><br>' +
+                    '<img src="'+pict.url_s+'" alt="'+pict.title+'"/>'
 
                 }
                 picts.push(o);
             }
-
             for(var i = 0; i<picts.length; i++){
-                L.marker([picts[i].lat, picts[i].lng], {icon: picts[i].marker}).addTo(map);
+                var marker = L.marker([picts[i].lat, picts[i].lng], {icon: picts[i].marker}).addTo(markers);
+                picts[i].img_s.onloadend = marker.bindPopup(picts[i].popupContent);
             }
+            markers.addTo(map);
 
 
             console.log(picts);
