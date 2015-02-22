@@ -1,12 +1,12 @@
 $(document).ready(function(){
     //global var
     var waiting, adresse, map, longitude, latitude, markers;
+    var randomCountry = chance.country({ full: true });
 
 
     $(".button-collapse").sideNav();
 
     setBackground();
-    setMap(0,0);
 
     $(".refresh").on("click", function(){
        getSomePhotos();
@@ -16,6 +16,15 @@ $(document).ready(function(){
         adresse = $(this).val();
         clearTimeout(waiting);
         waiting = setTimeout(slowAlert, 2000);
+    });
+
+    $.getJSON("https://maps.googleapis.com/maps/api/geocode/json?address="+randomCountry.split(" ").join("+"), function($data){
+        var obj = $data.results[0];
+        latitude = obj.geometry.location.lat;
+        longitude = obj.geometry.location.lng;
+
+        setMap(latitude, longitude);
+        getSomePhotos();
     });
 
     function slowAlert(){
@@ -29,8 +38,9 @@ $(document).ready(function(){
             $('html,body').animate({
                 scrollTop: $("#picuresMap").offset().top
             },1500, 'easeInOutQuad');
-            getSomePhotos();
+
             map.panTo(new L.LatLng(latitude, longitude));
+            getSomePhotos();
         });
     }
 
@@ -57,7 +67,7 @@ $(document).ready(function(){
         /*
          * FLICKR
          */
-        var tags = "veracruz,mexico,jarocho"
+        var tags = randomCountry+",landscape";
         var flickr = "https://api.flickr.com/services/rest/?&method=flickr.photos.search&per_page=250&api_key=f42673e7bf8314ab473f73e8668ac2f7&radius=10&tags="+tags+"&extras=url_l&format=json&nojsoncallback=1";
         $.getJSON(flickr, function($photos){
             var random = parseInt(Math.random()*$photos.photos.photo.length);
@@ -73,11 +83,14 @@ $(document).ready(function(){
 
     function getSomePhotos(){
         //var tags = "veracruz,mexico,jarocho"
-
+        latitude = map.getCenter().lat;
+        longitude = map.getCenter().lng;
+        markers.clearLayers();
+        console.log(map.getCenter().lat)
         var limit = 120;
         var flickr = "https://api.flickr.com/services/rest/?&method=flickr.photos.search&per_page="+limit+"&api_key=f42673e7bf8314ab473f73e8668ac2f7&radius=10&extras=geo,owner_name,license,date_upload,date_taken,url_sq,url_t, url_s, url_q, url_m, url_n, url_z, url_c, url_l, url_o&format=json&nojsoncallback=1&lat="+latitude+"&lon="+longitude;
         $.getJSON(flickr, function($photos){
-            markers.clearLayers();
+
             var path = $photos.photos.photo;
             var picts = [];
             var random = parseInt(Math.random()*path.length);

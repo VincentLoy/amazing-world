@@ -387,6 +387,9 @@
     position: absolute;
     text-align: center;
 }
+.leaflet-popup img {
+    width: 100%;
+}
 .leaflet-popup-content-wrapper {
     padding: 1px;
     text-align: center;
