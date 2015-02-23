@@ -56,10 +56,6 @@ $(document).ready(function(){
             'Imagery © <a href="http://mapbox.com">Mapbox</a>',
             id: 'examples.map-i875mjb7'
         }).addTo(map);
-
-
-        L.marker([lat, lon]).addTo(map)
-            .bindPopup("<b>Hello world!</b><br />I am a popup.").openPopup();
     }
 
 
@@ -88,16 +84,24 @@ $(document).ready(function(){
         markers.clearLayers();
         console.log(map.getCenter().lat)
         var limit = 120;
-        var flickr = "https://api.flickr.com/services/rest/?&method=flickr.photos.search&per_page="+limit+"&api_key=f42673e7bf8314ab473f73e8668ac2f7&radius=10&extras=geo,owner_name,license,date_upload,date_taken,url_sq,url_t, url_s, url_q, url_m, url_n, url_z, url_c, url_l, url_o&format=json&nojsoncallback=1&lat="+latitude+"&lon="+longitude;
+        var flickr = "https://api.flickr.com/services/rest/?&method=flickr.photos.search&per_page="+limit+"&api_key=f42673e7bf8314ab473f73e8668ac2f7&radius=1&extras=geo,owner_name,license,date_upload,date_taken,url_sq,url_t, url_s, url_q, url_m, url_n, url_z, url_c, url_l, url_o&format=json&nojsoncallback=1&lat="+latitude+"&lon="+longitude;
+        window.open(flickr)
         $.getJSON(flickr, function($photos){
 
             var path = $photos.photos.photo;
+            var total = $photos.photos.total;
             var picts = [];
             var random = parseInt(Math.random()*path.length);
             var img = path[random].url_l;
 
-            for(var i = 0; i<50; i++){
-                var pict = path[parseInt(Math.random()*path.length)];
+            if(total < limit){
+                limit = total;
+            }
+            else if(path.length > 0){
+                
+            }
+            for(var i = 0; i<limit; i++){
+                var pict = path[i];
                 var o = {
                     ownerUrl: "https://www.flickr.com/photos/"+pict.owner,
                     ownerName: pict.ownername,
@@ -129,15 +133,24 @@ $(document).ready(function(){
                         popupAnchor: [-3,-76]
                     }),
                     popupContent: '<strong>'+pict.title+'</strong><br>' +
-                    '<img src="'+pict.url_s+'" alt="'+pict.title+'"/>'
+                    '<img src="'+pict.url_s+'" alt="'+pict.title+'"/><br>' +
+                        '<a href="'+pict.url_o+'" target="_blank">original</a>'+
+                        ' by <a href="https://www.flickr.com/photos/'+pict.owner+'" target="_blank">'+pict.ownername+'</a>'
 
                 }
                 picts.push(o);
             }
-            for(var i = 0; i<picts.length; i++){
-                var marker = L.marker([picts[i].lat, picts[i].lng], {icon: picts[i].marker}).addTo(markers);
-                picts[i].img_s.onloadend = marker.bindPopup(picts[i].popupContent);
+            alert(picts.length)
+            if(picts.length > 0){
+                for(var i = 0; i<picts.length; i++){
+                    var marker = L.marker([picts[i].lat, picts[i].lng], {icon: picts[i].marker}).addTo(markers);
+                    picts[i].img_s.onloadend = marker.bindPopup(picts[i].popupContent);
+                }
             }
+            else{
+                alert("aucune photo ici")
+            }
+
             markers.addTo(map);
 
 

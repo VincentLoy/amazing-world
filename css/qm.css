@@ -1,6 +1,9 @@
 body, html{
     height: 100% !important;
 }
+header nav{
+    background: #546e7a;
+}
 .main-head-container{
     background-repeat: no-repeat !important;
     -webkit-background-size: cover !important;
