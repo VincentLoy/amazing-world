@@ -201,7 +201,7 @@
                 if(picts.length > 0){
                     for(var i = 0; i<picts.length; i++){
                         var marker = L.marker([picts[i].lat, picts[i].lng], {icon: picts[i].marker}).addTo(markers);
-                        picts[i].img_s.onloadend = marker.bindPopup(picts[i].popupContent);
+                        marker.bindPopup(picts[i].popupContent);
 
                         oms.addMarker(marker); //overlapping Marker Spiderfier
                     }
