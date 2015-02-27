@@ -1,7 +1,8 @@
 $(document).ready(function(){
     //global var
-    var waiting, adresse, map, longitude, latitude, markers;
+    var waiting, adresse, map, longitude, latitude, markers, limit, currentZoom, oms;
     var randomCountry = chance.country({ full: true });
+    var radius = 1;
 
 
     $(".button-collapse").sideNav();
@@ -56,6 +57,16 @@ $(document).ready(function(){
             'Imagery © <a href="http://mapbox.com">Mapbox</a>',
             id: 'examples.map-i875mjb7'
         }).addTo(map);
+        map._layersMaxZoom=16;
+        map._layersMinZoom=3;
+        /*
+        * reload pictures on map dragging
+         */
+        map.on("dragend", function(){
+            getSomePhotos();
+        });
+
+        oms = new OverlappingMarkerSpiderfier(map);
     }
 
 
@@ -73,7 +84,7 @@ $(document).ready(function(){
             $(".parallax").parallax();
             //$(".main-head-container").css("background", "url("+img+")");
         }).fail(function(jqXHR, status, error){
-            console.dir(error);
+            console.log(error);
         });
     }
 
@@ -82,11 +93,18 @@ $(document).ready(function(){
         latitude = map.getCenter().lat;
         longitude = map.getCenter().lng;
         markers.clearLayers();
-        console.log(map.getCenter().lat)
-        var limit = 120;
-        var flickr = "https://api.flickr.com/services/rest/?&method=flickr.photos.search&per_page="+limit+"&api_key=f42673e7bf8314ab473f73e8668ac2f7&radius=1&extras=geo,owner_name,license,date_upload,date_taken,url_sq,url_t, url_s, url_q, url_m, url_n, url_z, url_c, url_l, url_o&format=json&nojsoncallback=1&lat="+latitude+"&lon="+longitude;
-        window.open(flickr)
+
+        console.log("map size = "+map.getSize()+" / Map zoom = "+map.getZoom());
+
+        //console.log(map.getCenter().lat)
+        limit = 120;
+        currentZoom = map.getZoom();
+        radius = 17-currentZoom;
+        console.log("radius : "+radius);
+        var flickr = "https://api.flickr.com/services/rest/?&method=flickr.photos.search&per_page="+limit+"&api_key=f42673e7bf8314ab473f73e8668ac2f7&radius="+radius+"&extras=geo,owner_name,license,date_upload,date_taken,url_sq,url_t, url_s, url_q, url_m, url_n, url_z, url_c, url_l, url_o&format=json&nojsoncallback=1&lat="+latitude+"&lon="+longitude;
+        //window.open(flickr)
         $.getJSON(flickr, function($photos){
+            console.dir($photos);
 
             var path = $photos.photos.photo;
             var total = $photos.photos.total;
@@ -100,8 +118,26 @@ $(document).ready(function(){
             else if(path.length > 0){
                 
             }
-            for(var i = 0; i<limit; i++){
+
+            for(var i = 0; i<path.length; i++){
                 var pict = path[i];
+
+                /*
+                 * check if original current picture is available
+                 */
+                /*if(typeof pict.url_o !== "undefined"){
+                    var original = pict.url_o;
+                }
+                else if(typeof pict.url_l !== "undefined"){
+                    var original = pict.url_l;
+                }
+                else if(typeof pict.url_c !== "undefined"){
+                    var original = pict.url_c;
+                }
+                else if(typeof pict.url_z !== "undefined"){
+                    var original = pict.url_z;
+                }*/
+
                 var o = {
                     ownerUrl: "https://www.flickr.com/photos/"+pict.owner,
                     ownerName: pict.ownername,
@@ -129,7 +165,7 @@ $(document).ready(function(){
                         iconUrl: pict.url_sq,
 
                         iconSize: [35,35],
-                        iconAnchor: [22,94],
+                        iconAnchor: [17,0],
                         popupAnchor: [-3,-76]
                     }),
                     popupContent: '<strong>'+pict.title+'</strong><br>' +
@@ -140,21 +176,22 @@ $(document).ready(function(){
                 }
                 picts.push(o);
             }
-            alert(picts.length)
+            //alert(picts.length)
             if(picts.length > 0){
                 for(var i = 0; i<picts.length; i++){
                     var marker = L.marker([picts[i].lat, picts[i].lng], {icon: picts[i].marker}).addTo(markers);
                     picts[i].img_s.onloadend = marker.bindPopup(picts[i].popupContent);
+                    oms.addMarker(marker);
                 }
             }
             else{
-                alert("aucune photo ici")
+                alert("aucune photo ici");
             }
 
             markers.addTo(map);
 
 
-            console.log(picts);
+            //console.log(picts);
         }).fail(function(jqXHR, status, error){
             console.dir(error);
         });
