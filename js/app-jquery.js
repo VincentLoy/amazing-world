@@ -1,4 +1,15 @@
 $(document).ready(function(){
+    //APIKEY
+    var APIKEY = "PUT YOUR FLICKR API KEY HERE";
+
+    /*
+    * quick trick to get my secret APIKEY - remove or put your apikey in an apikey.txt file in the root directory
+     */
+    $.get("apikey.txt", function(key){
+        APIKEY = key;
+    }, "text");
+    // /end quick trick
+
     //global var
     var waiting, adresse, map, longitude, latitude, markers, limit, currentZoom, oms;
     var randomCountry = chance.country({ full: true });
@@ -10,6 +21,7 @@ $(document).ready(function(){
     setBackground();
 
     $(".refresh").on("click", function(){
+        toast("resetting pictures...", 3000);
        getSomePhotos();
     });
 
@@ -75,7 +87,7 @@ $(document).ready(function(){
          * FLICKR
          */
         var tags = randomCountry+",landscape";
-        var flickr = "https://api.flickr.com/services/rest/?&method=flickr.photos.search&per_page=250&api_key=f42673e7bf8314ab473f73e8668ac2f7&radius=10&tags="+tags+"&extras=url_l&format=json&nojsoncallback=1";
+        var flickr = "https://api.flickr.com/services/rest/?&method=flickr.photos.search&per_page=250&api_key="+APIKEY+"&radius=10&tags="+tags+"&extras=url_l&format=json&nojsoncallback=1";
         $.getJSON(flickr, function($photos){
             var random = parseInt(Math.random()*$photos.photos.photo.length);
             var img = $photos.photos.photo[random].url_l;
@@ -101,7 +113,7 @@ $(document).ready(function(){
         currentZoom = map.getZoom();
         radius = 17-currentZoom;
         console.log("radius : "+radius);
-        var flickr = "https://api.flickr.com/services/rest/?&method=flickr.photos.search&per_page="+limit+"&api_key=f42673e7bf8314ab473f73e8668ac2f7&radius="+radius+"&extras=geo,owner_name,license,date_upload,date_taken,url_sq,url_t, url_s, url_q, url_m, url_n, url_z, url_c, url_l, url_o&format=json&nojsoncallback=1&lat="+latitude+"&lon="+longitude;
+        var flickr = "https://api.flickr.com/services/rest/?&method=flickr.photos.search&per_page="+limit+"&api_key="+APIKEY+"&radius="+radius+"&extras=geo,owner_name,license,date_upload,date_taken,url_sq,url_t, url_s, url_q, url_m, url_n, url_z, url_c, url_l, url_o&format=json&nojsoncallback=1&lat="+latitude+"&lon="+longitude;
         //window.open(flickr)
         $.getJSON(flickr, function($photos){
             console.dir($photos);
@@ -185,7 +197,7 @@ $(document).ready(function(){
                 }
             }
             else{
-                alert("aucune photo ici");
+                toast("no photos here");
             }
 
             markers.addTo(map);
