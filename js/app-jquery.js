@@ -7,6 +7,7 @@ $(document).ready(function(){
      */
     $.get("apikey.txt", function(key){
         APIKEY = key;
+        setBackground(); //put this call out of the trick
     }, "text");
     // /end quick trick
 
@@ -18,10 +19,7 @@ $(document).ready(function(){
 
     $(".button-collapse").sideNav();
 
-    setBackground();
-
     $(".refresh").on("click", function(){
-        toast("resetting pictures...", 3000);
        getSomePhotos();
     });
 
@@ -78,7 +76,14 @@ $(document).ready(function(){
             getSomePhotos();
         });
 
-        oms = new OverlappingMarkerSpiderfier(map);
+        /*
+         * overlapping Marker Spiderfier
+         */
+        oms = new OverlappingMarkerSpiderfier(map, {
+            keepSpiderfied: true,
+            nearbyDistance: 50
+
+        });
     }
 
 
@@ -89,6 +94,7 @@ $(document).ready(function(){
         var tags = randomCountry+",landscape";
         var flickr = "https://api.flickr.com/services/rest/?&method=flickr.photos.search&per_page=250&api_key="+APIKEY+"&radius=10&tags="+tags+"&extras=url_l&format=json&nojsoncallback=1";
         $.getJSON(flickr, function($photos){
+            console.dir($photos);
             var random = parseInt(Math.random()*$photos.photos.photo.length);
             var img = $photos.photos.photo[random].url_l;
             console.log(img);
@@ -177,8 +183,8 @@ $(document).ready(function(){
                         iconUrl: pict.url_sq,
 
                         iconSize: [35,35],
-                        iconAnchor: [17,0],
-                        popupAnchor: [-3,-76]
+                        iconAnchor: [17,35],
+                        popupAnchor: [0,-35]
                     }),
                     popupContent: '<strong>'+pict.title+'</strong><br>' +
                     '<img src="'+pict.url_s+'" alt="'+pict.title+'"/><br>' +
@@ -193,11 +199,12 @@ $(document).ready(function(){
                 for(var i = 0; i<picts.length; i++){
                     var marker = L.marker([picts[i].lat, picts[i].lng], {icon: picts[i].marker}).addTo(markers);
                     picts[i].img_s.onloadend = marker.bindPopup(picts[i].popupContent);
-                    oms.addMarker(marker);
+                    
+                    oms.addMarker(marker); //overlapping Marker Spiderfier
                 }
             }
             else{
-                toast("no photos here");
+                alert("no photos here");
             }
 
             markers.addTo(map);
