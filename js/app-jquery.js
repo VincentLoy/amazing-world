@@ -3,36 +3,42 @@
 
     $(document).ready(function(){
         //APIKEY
-        var APIKEY = "PUT YOUR FLICKR API KEY HERE";
+        var APIKEY = "PUT YOUR FLICKR API KEY HERE",
+            waiting,
+            adresse,
+            map,
+            longitude,
+            latitude,
+            markers,
+            limit,
+            currentZoom,
+            oms,
+            randomCountry = chance.country({ full: true }),
+            radius = 1;
 
         /*
          * quick trick to get my secret APIKEY - remove or put your apikey in an apikey.txt file in the root directory
          */
-        $.get("apikey.txt", function(key){
+        $.get("apikey.txt", function (key) {
             APIKEY = key;
             setBackground(); //put this call out of the trick
         }, "text");
         // /end quick trick
 
-        //global var
-        var waiting, adresse, map, longitude, latitude, markers, limit, currentZoom, oms;
-        var randomCountry = chance.country({ full: true });
-        var radius = 1;
-
 
         $(".button-collapse").sideNav();
 
-        $(".refresh").on("click", function(){
+        $(".refresh").on("click", function () {
             getSomePhotos();
         });
 
-        $(".search").keyup(function(){
+        $(".search").keyup(function () {
             adresse = $(this).val();
             clearTimeout(waiting);
             waiting = setTimeout(slowAlert, 2000);
         });
 
-        $.getJSON("https://maps.googleapis.com/maps/api/geocode/json?address="+randomCountry.split(" ").join("+"), function($data){
+        $.getJSON("https://maps.googleapis.com/maps/api/geocode/json?address=" + randomCountry.split(" ").join("+"), function ($data) {
             var obj = $data.results[0];
             latitude = obj.geometry.location.lat;
             longitude = obj.geometry.location.lng;
@@ -41,17 +47,17 @@
             getSomePhotos();
         });
 
-        function slowAlert(){
-            var geocode = "https://maps.googleapis.com/maps/api/geocode/json?address="+adresse.split(" ").join("+");
-            var zoom = 16;
+        function slowAlert() {
+            var geocode = "https://maps.googleapis.com/maps/api/geocode/json?address="+adresse.split(" ").join("+"),
+                zoom = 16;
 
-            $.getJSON(geocode, function($data){
+            $.getJSON(geocode, function ($data) {
                 var obj = $data.results[0];
                 latitude = obj.geometry.location.lat;
                 longitude = obj.geometry.location.lng;
                 $('html,body').animate({
                     scrollTop: $("#picuresMap").offset().top
-                },1500, 'easeInOutQuad');
+                }, 1500, 'easeInOutQuad');
 
                 map.panTo(new L.LatLng(latitude, longitude));
                 getSomePhotos();
@@ -59,23 +65,23 @@
         }
 
 
-        function setMap(lat,lon){
+        function setMap(lat, lon) {
             map = L.map('picuresMap').setView([lat, lon], 12);
             markers = L.layerGroup();
 
             L.tileLayer('https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png', {
                 maxZoom: 18,
                 attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-                'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+                    '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                    'Imagery © <a href="http://mapbox.com">Mapbox</a>',
                 id: 'examples.map-i875mjb7'
             }).addTo(map);
-            map._layersMaxZoom=16;
-            map._layersMinZoom=3;
+            map._layersMaxZoom = 16;
+            map._layersMinZoom = 3;
             /*
              * reload pictures on map dragging
              */
-            map.on("dragend", function(){
+            map.on("dragend", function () {
                 getSomePhotos();
             });
 
@@ -94,17 +100,17 @@
             /*
              * FLICKR
              */
-            var tags = randomCountry+",landscape";
-            var flickr = "https://api.flickr.com/services/rest/?&method=flickr.photos.search&per_page=250&api_key="+APIKEY+"&radius=10&tags="+tags+"&extras=url_l&format=json&nojsoncallback=1";
-            $.getJSON(flickr, function($photos){
+            var tags = randomCountry + ",landscape";
+            var flickr = "https://api.flickr.com/services/rest/?&method=flickr.photos.search&per_page=250&api_key=" + APIKEY + "&radius=10&tags=" + tags + "&extras=url_l&format=json&nojsoncallback=1";
+            $.getJSON(flickr, function ($photos) {
                 console.dir($photos);
-                var random = parseInt(Math.random()*$photos.photos.photo.length);
+                var random = parseInt(Math.random() * $photos.photos.photo.length);
                 var img = $photos.photos.photo[random].url_l;
                 console.log(img);
                 $(".parallax>img").attr("src", img);
                 $(".parallax").parallax();
                 //$(".main-head-container").css("background", "url("+img+")");
-            }).fail(function(jqXHR, status, error){
+            }).fail(function (jqXHR, status, error) {
                 console.log(error);
             });
         }
@@ -115,32 +121,31 @@
             longitude = map.getCenter().lng;
             markers.clearLayers();
 
-            console.log("map size = "+map.getSize()+" / Map zoom = "+map.getZoom());
+            console.log("map size = " + map.getSize() + " / Map zoom = " + map.getZoom());
 
             //console.log(map.getCenter().lat)
             limit = 120;
             currentZoom = map.getZoom();
-            radius = 17-currentZoom;
-            console.log("radius : "+radius);
-            var flickr = "https://api.flickr.com/services/rest/?&method=flickr.photos.search&per_page="+limit+"&api_key="+APIKEY+"&radius="+radius+"&extras=geo,owner_name,license,date_upload,date_taken,url_sq,url_t, url_s, url_q, url_m, url_n, url_z, url_c, url_l, url_o&format=json&nojsoncallback=1&lat="+latitude+"&lon="+longitude;
+            radius = 17 - currentZoom;
+            console.log("radius : " + radius);
+            var flickr = "https://api.flickr.com/services/rest/?&method=flickr.photos.search&per_page=" + limit + "&api_key=" + APIKEY + "&radius=" + radius + "&extras=geo,owner_name,license,date_upload,date_taken,url_sq,url_t, url_s, url_q, url_m, url_n, url_z, url_c, url_l, url_o&format=json&nojsoncallback=1&lat=" + latitude + "&lon=" + longitude;
             //window.open(flickr)
-            $.getJSON(flickr, function($photos){
+            $.getJSON(flickr, function ($photos) {
                 console.dir($photos);
 
                 var path = $photos.photos.photo;
                 var total = $photos.photos.total;
                 var picts = [];
-                var random = parseInt(Math.random()*path.length);
+                var random = parseInt(Math.random() * path.length);
                 var img = path[random].url_l;
 
-                if(total < limit){
+                if (total < limit) {
                     limit = total;
-                }
-                else if(path.length > 0){
+                } else if (path.length > 0) {
 
                 }
 
-                for(var i = 0; i<path.length; i++){
+                for (var i = 0; i<path.length; i++) {
                     var pict = path[i];
 
                     /*
@@ -194,7 +199,7 @@
                         '<a href="'+pict.url_o+'" target="_blank">original</a>'+
                         ' by <a href="https://www.flickr.com/photos/'+pict.owner+'" target="_blank">'+pict.ownername+'</a>'
 
-                    }
+                    };
                     picts.push(o);
                 }
                 //alert(picts.length)
